@@ -24,6 +24,13 @@ class YuShuBook:
         """
         url = cls.isbn_url.format(isbn)
         result = HTTP.get(url)
+
+        # book = query_from_musql(isbn)
+        # if book:
+        #     return book
+        # else:
+        #     save(result)
+
         return result
 
     @classmethod
