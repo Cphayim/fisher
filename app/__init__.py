@@ -3,6 +3,7 @@
   Created by Cphayim at 2018/6/24 18:52
 """
 from flask import Flask
+from app.models.book import db
 
 from app import setting, secure
 from app.web import web
@@ -15,9 +16,21 @@ def create_app():
     创建 app 实例
     """
     app = Flask(__name__)
+
+    # 添加配置
     app.config.from_object(setting)
     app.config.from_object(secure)
+
+    # 注册蓝图
     register_blueprint(app)
+
+    # 添加插件
+    db.init_app(app)
+
+    # db.create_all(app=app)
+    with app.app_context():
+        db.create_all()
+
     return app
 
 
