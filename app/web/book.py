@@ -4,13 +4,14 @@
   书籍相关视图函数
 """
 import json
+import htmlmin
 
 from flask import jsonify, request, render_template, flash
 
 from app.forms.book import SearchForm
 from app.libs.helper import is_isbn_or_key
 from app.spider.yushu_book import YuShuBook
-from app.view_models.book import BookCollection
+from app.view_models.book import BookCollection, BookViewModel
 from . import web
 
 __author__ = 'Cphayim'
@@ -48,12 +49,16 @@ def search():
         flash('搜索的关键字不符合要求，请重新输入关键字')
         # return jsonify(form.errors)
 
-    return render_template('search_result.html', books=books, form=form)
+    return htmlmin.minify(render_template('search_result.html', books=books, form=form),
+                          remove_empty_space=True)
 
 
 @web.route('/book/<isbn>/detail')
 def book_detail(isbn):
-    pass
+    yushu_book = YuShuBook()
+    yushu_book.search_by_isbn(isbn)
+    book = BookViewModel(yushu_book.first)
+    return render_template('book_detail.html', book=book, wishes=[], gifts=[])
 
 # @web.route('/test')
 # def test():
