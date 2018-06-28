@@ -2,12 +2,14 @@
 """
   Created by Cphayim at 2018/6/24 18:05
 """
+import json
+
 from flask import jsonify, request
 
 from app.forms.book import SearchForm
 from app.libs.helper import is_isbn_or_key
 from app.spider.yushu_book import YuShuBook
-from app.view_models.book import BookViewModel
+from app.view_models.book import BookViewModel, BookCollection
 from . import web
 
 __author__ = 'Cphayim'
@@ -30,14 +32,15 @@ def search():
         # 判断当前关键字 q 是普通关键字还是 isbn 编号
         isbn_or_key = is_isbn_or_key(q)
 
+        yushu_book = YuShuBook()
+        books = BookCollection()
+
         if isbn_or_key == 'isbn':
-            result = YuShuBook.search_by_isbn(q)
-            result = BookViewModel.package_sigle(result, q)
+            yushu_book.search_by_isbn(q)
         else:
-            result = YuShuBook.search_by_keyword(q, page)
-            result = BookViewModel.package_collection(result, q)
+            yushu_book.search_by_keyword(q, page)
 
-        return jsonify(result)
-
+        books.fill(yushu_book, q)
+        return json.dumps(books, default=lambda o: o.__dict__), 200, {'content-type': 'application/json'}
     else:
         return jsonify(form.errors)

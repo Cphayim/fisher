@@ -15,38 +15,54 @@ class YuShuBook:
     # keyword API 请求地址
     keyword_url = 'http://t.yushu.im/v2/book/search?q={}&count={}&start={}'
 
-    @classmethod
-    def search_by_isbn(cls, isbn):
+    def __init__(self):
+        # 总数
+        self.total = 0
+        # 书籍列表
+        self.books = []
+
+    def search_by_isbn(self, isbn):
         """
         通过 isbn 请求数据
         :param isbn: isbn 编号
         :return:
         """
-        url = cls.isbn_url.format(isbn)
+        url = self.isbn_url.format(isbn)
         result = HTTP.get(url)
+        self.__fill_single(result)
 
-        # book = query_from_musql(isbn)
-        # if book:
-        #     return book
-        # else:
-        #     save(result)
-
-        return result
-
-    @classmethod
-    def search_by_keyword(cls, keyword, page=1):
+    def search_by_keyword(self, keyword, page=1):
         """
         通过关键字请求数据
         :param keyword: 关键字
         :param page: 页码
         :return:
         """
-        url = cls.keyword_url.format(keyword, current_app.config['PER_PAGE'], cls.calculate_start(page))
+        url = self.keyword_url.format(keyword, current_app.config['PER_PAGE'], self.__calculate_start(page))
         result = HTTP.get(url)
-        return result
+        self.__fill_collection(result)
+
+    def __fill_single(self, data):
+        """
+        数据填充-单书籍（isbn 搜索）
+        :param data:
+        :return:
+        """
+        if data:
+            self.total = 1
+            self.books.append(data)
+
+    def __fill_collection(self, data):
+        """
+        数据填充-书籍列表（关键字 查找）
+        :param data:
+        :return:
+        """
+        self.total = data['total']
+        self.books = data['books']
 
     @staticmethod
-    def calculate_start(page):
+    def __calculate_start(page):
         """
         根据页码计算 start 参数
         :param page:
