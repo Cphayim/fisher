@@ -1,0 +1,32 @@
+{#导入基础模板#}
+{% extends 'layout.html' %}
+
+{#指定填充区域#}
+{% block content %}
+{#  继承block原有内容需要使用 super()，否则将覆盖  #}
+    {{ super() }}
+    {{ data.name }}
+    {{ data.age }}
+    {#这是Jinja2的注释#}
+{#    if#}
+{#for in#}
+    {% if data.age < 18 %}
+        {{ data.name }}
+    {% elif data.age == 18 %}
+{#       default 是用来给不存在的数据赋默认值的，而不是判断 False #}
+        {{ data.school | default('未名') }}
+        {{ data | length() }}
+    {% else %}
+        {{ data.age }}
+    {% endif %}
+{#    {% for in %}#}
+
+    {#定义一个变量，接收消息闪现#}
+    {% set messages = get_flashed_messages() %}
+    <div>{{ messages }}</div>
+
+    {#with 可以缩小变量的作用域#}
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+        <div>{{ messages }}</div>
+    {% endwith %}
+{% endblock %}
