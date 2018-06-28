@@ -10,6 +10,7 @@ class BookViewModel:
     """
     书籍类
     """
+
     def __init__(self, book):
         # 书名
         self.title = book['title']
@@ -19,6 +20,8 @@ class BookViewModel:
         self.pages = book['pages'] or ''
         # 作者
         self.author = '、'.join(book['author'])
+        # isbn
+        self.isbn = book['isbn']
         # 价格
         self.price = book['price']
         # 简介
@@ -26,12 +29,25 @@ class BookViewModel:
         # 封面图
         self.image = book['image']
 
+    @property
+    def intro(self):
+        """
+        介绍，用于模板
+        :return:
+        """
+        intros = filter(
+            lambda x: True if x else False,
+            [self.author, self.publisher, self.price]
+        )
+        return '/'.join(intros)
+
 
 class BookCollection:
     """
     书籍集合类
     用于响应的视图模型
     """
+
     def __init__(self):
         # 总数
         self.total = 0
@@ -56,6 +72,8 @@ class BookCollection:
 """
 已废弃
 """
+
+
 class _BookViewModel:
 
     # 描述特征（类变量、实例变量）
