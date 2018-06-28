@@ -4,8 +4,6 @@
 """
 from flask import Flask
 from app.models.book import db
-
-from app import setting, secure
 from app.web import web
 
 __author__ = 'Cphayim'
@@ -18,8 +16,8 @@ def create_app():
     app = Flask(__name__)
 
     # 添加配置
-    app.config.from_object(setting)
-    app.config.from_object(secure)
+    app.config.from_object('app.setting')
+    app.config.from_object('app.secure')
 
     # 注册蓝图
     register_blueprint(app)
