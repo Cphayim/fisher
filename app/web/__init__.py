@@ -9,5 +9,4 @@ __author__ = 'Cphayim'
 # 创建蓝图实例
 web = Blueprint('web', __name__)
 
-from app.web import book
-from app.web import user
+from app.web import book, auth, drift, gift, main, wish, test
