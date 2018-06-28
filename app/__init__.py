@@ -3,8 +3,9 @@
   Created by Cphayim at 2018/6/24 18:52
 """
 from flask import Flask
-from app.models.book import db
-from app.web import web
+
+from models.base import db
+from web import web
 
 __author__ = 'Cphayim'
 

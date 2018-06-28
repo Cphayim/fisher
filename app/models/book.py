@@ -3,15 +3,16 @@
   Created by Cphayim at 2018/6/25 01:01
 """
 from sqlalchemy import Column, Integer, String
-from flask_sqlalchemy import SQLAlchemy
+
+from models.base import Base
 
 __author__ = 'Cphayim'
 
-#
-db = SQLAlchemy()
 
-
-class Book(db.Model):
+class Book(Base):
+    """
+    书籍模型
+    """
     # id
     id = Column(Integer, primary_key=True, autoincrement=True)
     # 书名

@@ -4,7 +4,7 @@
 """
 from flask import current_app
 
-from app.libs.httper import HTTP
+from libs.httper import HTTP
 
 __author__ = 'Cphayim'
 

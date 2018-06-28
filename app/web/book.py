@@ -8,10 +8,12 @@ import htmlmin
 
 from flask import jsonify, request, render_template, flash
 
-from app.forms.book import SearchForm
-from app.libs.helper import is_isbn_or_key
-from app.spider.yushu_book import YuShuBook
-from app.view_models.book import BookCollection, BookViewModel
+from forms.book import SearchForm
+from libs.helper import is_isbn_or_key
+from spider.yushu_book import YuShuBook
+from view_models.book import BookCollection, BookViewModel
+from models.book import Book
+
 from . import web
 
 __author__ = 'Cphayim'

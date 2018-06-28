@@ -9,7 +9,10 @@ __author__ = 'Cphayim'
 
 
 class SearchForm(Form):
-    # 关键字校验器
+    """
+    搜索表单验证
+    """
+    # 搜索关键字（普通关键字/isbn 编号）
     q = StringField(validators=[DataRequired(), Length(min=1, max=30)])
-    # 页码校验器
+    # 页码
     page = IntegerField(validators=[NumberRange(min=1, max=99)], default=1)
