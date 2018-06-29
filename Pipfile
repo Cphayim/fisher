@@ -10,6 +10,7 @@ wtforms = "*"
 flask-sqlalchemy = "*"
 cymysql = "*"
 htmlmin = "*"
+flask-login = "*"
 
 [dev-packages]
 
