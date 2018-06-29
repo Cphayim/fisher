@@ -31,11 +31,6 @@ class LoginForm(Form):
         ]
     )
 
-    # 自定义验证器，一定要以 validate_属性
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
-            raise ValidationError('电子邮箱已被注册')
-
 
 class RegisterForm(LoginForm):
     """
@@ -53,3 +48,8 @@ class RegisterForm(LoginForm):
     def validate_nickname(self, field):
         if User.query.filter_by(nickname=field.data).first():
             raise ValidationError('该昵称已被使用')
+
+    # 自定义验证器，一定要以 validate_属性
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('电子邮箱已被注册')
