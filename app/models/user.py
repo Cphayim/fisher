@@ -4,13 +4,15 @@
 """
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from werkzeug.security import generate_password_hash
+from flask_login import UserMixin
 
+from app import login_manager
 from models.base import Base
 
 __author__ = 'Cphayim'
 
 
-class User(Base):
+class User(UserMixin, Base):
     """
     用户模型
     """
@@ -21,7 +23,7 @@ class User(Base):
     # 昵称
     nickname = Column(String(24), nullable=False)
     # 密码
-    _password = Column('password', String(128))
+    _password = Column('password', String(128), nullable=False)
     # 手机号码
     phone_number = Column(String(18), unique=True)
     # 邮箱
@@ -44,3 +46,19 @@ class User(Base):
     @password.setter
     def password(self, raw):
         self._password = generate_password_hash(raw)
+
+    # 通过 get_id 方法返回一个唯一标识用来创建登录态 Cookie
+    # 因为 UserMixin类 中的 get_id 方法默认返回的是 self.id
+    # 所以此处不需要重写该方法
+    # def get_id(self):
+    #     return self.id
+
+@login_manager.user_loader
+def get_user(uid):
+    """
+    通过 uid 查询用户对象并返回
+    :param uid:
+    :return:
+    """
+    # 查询主键使用 get
+    return User.query.get(int(uid))
