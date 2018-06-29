@@ -19,7 +19,6 @@ from . import web
 __author__ = 'Cphayim'
 
 
-# 创建蓝图对象
 @web.route('/book/search')
 def search():
     """
@@ -57,9 +56,15 @@ def search():
 
 @web.route('/book/<isbn>/detail')
 def book_detail(isbn):
+    """
+    书籍详情视图函数
+    :param isbn:
+    :return:
+    """
     yushu_book = YuShuBook()
     yushu_book.search_by_isbn(isbn)
     book = BookViewModel(yushu_book.first)
+
     return render_template('book_detail.html', book=book, wishes=[], gifts=[])
 
 # @web.route('/test')

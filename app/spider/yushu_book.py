@@ -72,4 +72,8 @@ class YuShuBook:
 
     @property
     def first(self):
+        """
+        返回 books 第一个 book 对象
+        :return:
+        """
         return self.books[0] if self.total >= 1 else None
