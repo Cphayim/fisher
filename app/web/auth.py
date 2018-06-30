@@ -3,7 +3,9 @@
   Created by Cphayim at 2018/6/28 16:00
   权限相关视图函数
 """
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_user
+
 from forms.auth import RegisterForm, LoginForm
 from models.base import db
 from models.user import User
@@ -42,7 +44,22 @@ def login():
 
     # 处理登录表单提交
     if request.method == 'POST' and form.validate():
-        pass
+
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+            # remember 参数确定用户登录的 cookie 是否持久保存
+            # 默认为 False，退出浏览器即删除
+            # 设置为 True 时，默认保存 365 天，具体配置 http://www.pythondoc.com/flask-login/#cookie
+            login_user(user, remember=True)
+            # 获取要跳转的地址
+            next = request.args.get('next')
+            # next 不是以 '/' 开头，也返回首页（防止重定向攻击）
+            if not next or next.startswith('/'):
+                next = url_for('web.index')
+            return redirect(next)
+        else:
+            flash('账号不存在或密码错误')
 
     return render_template('auth/login.html', form=form)
 

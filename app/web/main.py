@@ -8,7 +8,7 @@ __author__ = 'Cphayim'
 
 @web.route('/')
 def index():
-    pass
+    return 'hello'
 
 @web.route('/personal')
 def personal_center():

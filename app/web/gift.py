@@ -2,14 +2,17 @@
 """
   Created by Cphayim at 2018/6/28 16:12
 """
+from flask_login import login_required
+
 from . import web
 
 __author__ = 'Cphayim'
 
 
 @web.route('/my/gifts')
+@login_required
 def my_gifts():
-    pass
+    return 'My Gifts'
 
 
 @web.route('/gifts/book/<isbn>')

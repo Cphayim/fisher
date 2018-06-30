@@ -3,7 +3,7 @@
   Created by Cphayim at 2018/6/28 20:22
 """
 from sqlalchemy import Column, Integer, String, Boolean, Float
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 from app import login_manager
@@ -45,6 +45,11 @@ class User(UserMixin, Base):
     # setter
     @password.setter
     def password(self, raw):
+        """
+        设置一个加密密码
+        :param raw: 明文密码
+        :return:
+        """
         self._password = generate_password_hash(raw)
 
     # 通过 get_id 方法返回一个唯一标识用来创建登录态 Cookie
@@ -53,6 +58,16 @@ class User(UserMixin, Base):
     # def get_id(self):
     #     return self.id
 
+    def check_password(self, raw):
+        """
+        密码是否匹配
+        :param raw: 明文密码
+        :return:
+        """
+        return check_password_hash(self.password, raw)
+
+
+# @login_required 装饰的视图函数需要用到
 @login_manager.user_loader
 def get_user(uid):
     """
