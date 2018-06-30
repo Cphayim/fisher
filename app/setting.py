@@ -5,11 +5,11 @@
   通用配置
 """
 
-PER_PAGE = 15
-
 HOST = '0.0.0.0'
-
 PORT = 5000
 
-# DEBUG = False
-DEBUG = True
+# 搜索分页每页条数
+PER_PAGE = 15
+
+# 每次上传赠书获得的鱼豆数
+BEANS_UPLOAD_ONE_BOOK = 0.5

@@ -7,7 +7,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 from app import login_manager
+from libs.helper import is_isbn_or_key
 from models.base import Base
+from models.gift import Gift
+from models.wish import Wish
+from spider.yushu_book import YuShuBook
 
 __author__ = 'Cphayim'
 
@@ -30,11 +34,15 @@ class User(UserMixin, Base):
     email = Column(String(50), unique=True, nullable=False)
     # 是否确认邮箱
     confirmed = Column(Boolean, default=False)
-    #
+    # 鱼豆
     beans = Column(Float, default=0)
+    # 赠书数
     send_counter = Column(Integer, default=0)
+    # 索书数
     receive_counter = Column(Integer, default=0)
+    # 微信 open_id
     wx_open_id = Column(String(50))
+    # 微信名
     wx_name = Column(String(32))
 
     # getter
@@ -65,6 +73,32 @@ class User(UserMixin, Base):
         :return:
         """
         return check_password_hash(self.password, raw)
+
+    def can_save_to_list(self, isbn):
+        """
+        判断能否保存赠/索书记录
+        :param isbn:
+        :return:
+        """
+        if is_isbn_or_key(isbn) != 'isbn':
+            return False
+
+        yushu_book = YuShuBook()
+        yushu_book.search_by_isbn(isbn)
+        if not yushu_book.first:
+            return False
+
+        # 不允许一个用户同时赠送多本相同的图书
+        # 一个用户不可能同时成为赠送者和索要者（逻辑上冲突）
+
+        # 既不在赠送清单，又不在心愿清单才能添加
+        gifting = Gift.query.filter_by(uid=self.id, isbn=isbn, launched=False).first()
+        wishing = Wish.query.filter_by(uid=self.id, isbn=isbn, launched=False).first()
+
+        if not gifting and not wishing:
+            return True
+        else:
+            return False
 
 
 # @login_required 装饰的视图函数需要用到

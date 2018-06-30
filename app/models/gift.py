@@ -6,19 +6,18 @@ from sqlalchemy import Column, Integer, Boolean, ForeignKey, String, SmallIntege
 from sqlalchemy.orm import relationship
 
 from models.base import Base
-from models.user import User
 
 __author__ = 'Cphayim'
 
 
 class Gift(Base):
     """
-    礼物模型
+    礼物（赠书）模型
     """
     # id
     id = Column(Integer, primary_key=True)
     # 用户
-    user = relationship(User)
+    user = relationship('User')
     # 用户 id（外键）
     uid = Column(Integer, ForeignKey('user.id'))
     # 数据库中没有存 book 的数据（数据来自鱼书API）

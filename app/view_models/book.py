@@ -28,6 +28,10 @@ class BookViewModel:
         self.summary = book['summary'] or ''
         # 封面图
         self.image = book['image']
+        # 出版日期
+        self.pubdate = book['pubdate']
+        # 精装
+        self.binding = book['binding']
 
     @property
     def intro(self):
