@@ -25,10 +25,11 @@ def register():
 
     # 处理注册表单提交
     if request.method == 'POST' and form.validate():
-        user = User()
-        user.set_attrs(form.data)
-        db.session.add(user)
-        db.session.commit()
+        with db.auto_commit():
+            user = User()
+            user.set_attrs(form.data)
+            db.session.add(user)
+
         return redirect(url_for('web.login'))
 
     return render_template('auth/register.html', form=form)
@@ -55,7 +56,7 @@ def login():
             # 获取要跳转的地址
             next = request.args.get('next')
             # next 不是以 '/' 开头，也返回首页（防止重定向攻击）
-            if not next or next.startswith('/'):
+            if not next or not next.startswith('/'):
                 next = url_for('web.index')
             return redirect(next)
         else:
