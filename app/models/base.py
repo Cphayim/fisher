@@ -5,16 +5,20 @@
 from contextlib import contextmanager
 from datetime import datetime
 
-from flask_sqlalchemy import SQLAlchemy as _SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy as _SQLAlchemy, BaseQuery
 from sqlalchemy import Column, Integer, SmallInteger
 
 __author__ = 'Cphayim'
 
 
-# SQLAlchemy 的子类，实现一个自动 commit 的上下文管理器
+# 继承原 flask-sqlalchemy 的 SQLAlchemy 类，实现 auto_commit
 class SQLAlchemy(_SQLAlchemy):
     @contextmanager
     def auto_commit(self):
+        """
+        自动执行提交的上下文管理器
+        :return:
+        """
         try:
             yield
             # 事务
@@ -26,8 +30,22 @@ class SQLAlchemy(_SQLAlchemy):
             raise e
 
 
-# 初始化 SQLAlchemy
-db = SQLAlchemy()
+# 继承 flask-sqlalchemy 的 BaseQuery 类，重写 filter_by 方法
+class Query(BaseQuery):
+    def filter_by(self, **kwargs):
+        """
+        自定义 filter_by，查询未被标记删除的数据
+        :param kwargs:
+        :return:
+        """
+        if 'status' not in kwargs.keys():
+            kwargs['status'] = 1
+
+        return super(Query, self).filter_by(**kwargs)
+
+
+# 初始化 SQLAlchemy，指定自定义的 Query 类
+db = SQLAlchemy(query_class=Query)
 
 
 class Base(db.Model):
@@ -53,3 +71,14 @@ class Base(db.Model):
         for key, value in attrs_dict.items():
             if hasattr(self, key) and key != 'id':
                 setattr(self, key, value)
+
+    @property
+    def create_datetime(self):
+        """
+        转换为时间对象的 create_time
+        :return:
+        """
+        if self.create_time:
+            return datetime.fromtimestamp(self.create_time)
+        else:
+            return None
