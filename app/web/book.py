@@ -7,12 +7,16 @@ import json
 import htmlmin
 
 from flask import jsonify, request, render_template, flash
+from flask_login import current_user
 
 from forms.book import SearchForm
 from libs.helper import is_isbn_or_key
+from models.gift import Gift
+from models.wish import Wish
 from spider.yushu_book import YuShuBook
 from view_models.book import BookCollection, BookViewModel
 from models.book import Book
+from view_models.trade import TradeInfo
 
 from . import web
 
@@ -58,14 +62,45 @@ def search():
 def book_detail(isbn):
     """
     书籍详情视图函数
+    业务逻辑：
+        默认显示所有赠书人的名字
+        确定当前用户是赠书人 -> 显示所有索要人的名字
+        确定当前用户是索书人 -> 同默认
     :param isbn:
     :return:
     """
+    #
+    has_in_gifts = False
+    has_in_wishes = False
+
+    # 取书籍详情数据
     yushu_book = YuShuBook()
     yushu_book.search_by_isbn(isbn)
     book = BookViewModel(yushu_book.first)
 
-    return render_template('book_detail.html', book=book, wishes=[], gifts=[])
+    # 如果当前有登录状态，查询该用户是否存在正在进行的赠/索书记录
+    if current_user.is_authenticated:
+        # 当前用户正在进行赠书
+        if Gift.query.filter_by(uid=current_user.id, isbn=isbn, launched=False).first():
+            has_in_gifts = True
+        elif Wish.query.filter_by(uid=current_user.id, isbn=isbn, launched=False).first():
+            has_in_wishes = True
+
+    # 查询该书所有正在进行的赠/索书记录
+    trade_gifts = Gift.query.filter_by(isbn=isbn, launched=False).all()
+    trade_wishes = Wish.query.filter_by(isbn=isbn, launched=False).all()
+
+    trade_gifts_model = TradeInfo(trade_gifts)
+    trade_wishes_model = TradeInfo(trade_wishes)
+
+    return render_template(
+        'book_detail.html',
+        book=book,
+        gifts=trade_gifts_model,
+        wishes=trade_wishes_model,
+        has_in_gifts=has_in_gifts,
+        has_in_wishes=has_in_wishes
+    )
 
 # @web.route('/test')
 # def test():
