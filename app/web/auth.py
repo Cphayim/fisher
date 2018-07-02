@@ -4,7 +4,7 @@
   权限相关视图函数
 """
 from flask import render_template, request, redirect, url_for, flash
-from flask_login import login_user
+from flask_login import login_user, logout_user
 
 from forms.auth import RegisterForm, LoginForm
 from models.base import db
@@ -83,4 +83,9 @@ def change_password():
 
 @web.route('/logout')
 def logout():
-    pass
+    """
+    用户登出（注销）视图函数
+    :return:
+    """
+    logout_user()
+    return redirect(url_for('web.index'))
