@@ -2,11 +2,12 @@
 """
   Created by Cphayim at 2018/6/28 16:25
 """
-from flask import flash, redirect, url_for
+from flask import flash, redirect, url_for, render_template
 from flask_login import login_required, current_user
 
 from models.base import db
 from models.wish import Wish
+from view_models.trade import MyTrades
 from . import web
 
 __author__ = 'Cphayim'
@@ -17,8 +18,16 @@ def limit_key_prefix():
 
 
 @web.route('/my/wish')
+@login_required
 def my_wish():
-    pass
+    uid = current_user.id
+    # 得到我的心愿列表
+    wishes_of_mine = Wish.get_user_wishes(uid)
+    # 每个心愿中的 isbn 编号组成的列表
+    isbn_list = [wish.isbn for wish in wishes_of_mine]
+    gift_count_list = Wish.get_gift_counts(isbn_list)
+    view_model = MyTrades(wishes_of_mine, gift_count_list)
+    return render_template('my_wish.html', trades=view_model.trades)
 
 
 @web.route('/wish/book/<isbn>')

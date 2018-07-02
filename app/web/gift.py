@@ -7,7 +7,7 @@ from flask_login import login_required, current_user
 
 from models.base import db
 from models.gift import Gift
-from view_models.gift import MyGifts
+from view_models.trade import MyTrades
 from . import web
 
 __author__ = 'Cphayim'
@@ -27,8 +27,8 @@ def my_gifts():
     isbn_list = [gift.isbn for gift in gifts_of_mine]
     # 获取每个 isbn 对应的心愿数量
     wish_count_list = Gift.get_wish_counts(isbn_list)
-    view_model = MyGifts(gifts_of_mine, wish_count_list)
-    return render_template('my_gifts.html', gifts=view_model.gifts)
+    view_model = MyTrades(gifts_of_mine, wish_count_list)
+    return render_template('my_gifts.html', trades=view_model.trades)
 
 
 @web.route('/gifts/book/<isbn>')

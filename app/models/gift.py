@@ -8,7 +8,6 @@ from sqlalchemy import Column, Integer, Boolean, ForeignKey, String, desc, func
 from sqlalchemy.orm import relationship
 
 from models.base import Base, db
-from models.wish import Wish
 from spider.yushu_book import YuShuBook
 
 __author__ = 'Cphayim'
@@ -83,6 +82,7 @@ class Gift(Base):
         返回一个 {'count': xxx, 'isbn': xxx} 字典组成的列表
         :return:
         """
+        from models.wish import Wish
         # filter 接收的是条件表达式
         # mysql in
         # 我们要的是一组数量
