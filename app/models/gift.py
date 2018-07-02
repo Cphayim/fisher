@@ -2,11 +2,13 @@
 """
   Created by Cphayim at 2018/6/28 20:22
 """
+
 from flask import current_app
-from sqlalchemy import Column, Integer, Boolean, ForeignKey, String, desc
+from sqlalchemy import Column, Integer, Boolean, ForeignKey, String, desc, func
 from sqlalchemy.orm import relationship
 
-from models.base import Base
+from models.base import Base, db
+from models.wish import Wish
 from spider.yushu_book import YuShuBook
 
 __author__ = 'Cphayim'
@@ -61,3 +63,34 @@ class Gift(Base):
             .all()
 
         return recent_gift
+
+    @classmethod
+    def get_user_gifts(cls, uid):
+        """
+        获取用户的礼物列表
+        :return:
+        """
+        gifts = Gift.query.filter_by(uid=uid, launched=False) \
+            .order_by(desc(Gift.create_time)) \
+            .all()
+
+        return gifts
+
+    @classmethod
+    def get_wish_counts(cls, isbn_list):
+        """
+        根据传入的一组 isbn，到 Wish 表中计算出某个礼物的 Wish 心愿数量
+        返回一个 {'count': xxx, 'isbn': xxx} 字典组成的列表
+        :return:
+        """
+        # filter 接收的是条件表达式
+        # mysql in
+        # 我们要的是一组数量
+        count_list = db.session.query(func.count(Wish.id), Wish.isbn) \
+            .filter(Wish.isbn.in_(isbn_list), Wish.launched == False, Wish.status == 1) \
+            .group_by(Wish.isbn) \
+            .all()
+
+        # 应该返回字典结构而非元组结构
+        count_list = [{'count': w[0], 'isbn': w[1]} for w in count_list]
+        return count_list

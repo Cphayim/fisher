@@ -7,6 +7,9 @@ __author__ = 'Cphayim'
 
 
 class TradeInfo:
+    """
+    交易信息
+    """
     def __init__(self, goods):
         # 总数
         self.total = 0
