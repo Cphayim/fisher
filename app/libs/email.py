@@ -2,12 +2,22 @@
 """
   Created by Cphayim at 2018/7/3 09:46
 """
+from threading import Thread
+
 from flask import current_app, render_template
 from flask_mail import Message
 
 from app import mail
 
 __author__ = 'Cphayim'
+
+
+def send_async_mail(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            pass
 
 
 def send_mail(to, subject, template, **kwargs):
@@ -25,4 +35,8 @@ def send_mail(to, subject, template, **kwargs):
         recipients=[to]
     )
     msg.html = render_template(template, **kwargs)
-    mail.send(msg)
+
+    app = current_app._get_current_object()
+    # 启动一个线程来发送邮件
+    thr = Thread(target=send_async_mail, args=[app, msg])
+    thr.start()
