@@ -94,3 +94,11 @@ class Gift(Base):
         # 应该返回字典结构而非元组结构
         count_list = [{'count': w[0], 'isbn': w[1]} for w in count_list]
         return count_list
+
+    def is_yourself_gift(self, uid):
+        """
+        判断是不是你自己的礼物
+        :param uid: 用户 id
+        :return:
+        """
+        return True if self.uid == uid else False

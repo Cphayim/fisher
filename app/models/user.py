@@ -2,6 +2,8 @@
 """
   Created by Cphayim at 2018/6/28 20:22
 """
+from math import floor
+
 from flask import current_app
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,8 +11,10 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from app import login_manager
+from libs.enums import PendingStatus
 from libs.helper import is_isbn_or_key
 from models.base import Base, db
+from models.drift import Drift
 from models.gift import Gift
 from models.wish import Wish
 from spider.yushu_book import YuShuBook
@@ -76,6 +80,24 @@ class User(UserMixin, Base):
         """
         return check_password_hash(self.password, raw)
 
+    def can_send_drift(self):
+        """
+        是否能发起鱼漂
+        :return:
+        """
+        # 鱼豆必须足够（大于等于1）
+        if self.beans < 1:
+            return False
+        # 成功送出的总数
+        success_gifts_count = Gift.query.filter_by(uid=self.id, launched=True).count()
+        # 成功收到的总数
+        success_receive_count = Drift.query.filter_by(requester_id=self.id, pending=PendingStatus.Success).count()
+
+        # 每索取两本书，自己必须送出一本书
+        return True if \
+            floor(success_receive_count / 2) <= floor(success_gifts_count) \
+            else False
+
     def can_save_to_list(self, isbn):
         """
         判断能否保存赠/索书记录
@@ -105,7 +127,7 @@ class User(UserMixin, Base):
     def generate_token(self, expiration=600):
         """
         生成 token
-        :param expiration:
+        :param expiration: token 有效期
         :return:
         """
         s = Serializer(current_app.config.get('SECRET_KEY'), expiration)
@@ -114,6 +136,12 @@ class User(UserMixin, Base):
 
     @staticmethod
     def reset_password(token, new_password):
+        """
+        重置密码
+        :param token: token
+        :param new_password: 新密码
+        :return:
+        """
         s = Serializer(current_app.config.get('SECRET_KEY'))
         try:
             # 需要将 str 编码为 二进制
@@ -127,6 +155,19 @@ class User(UserMixin, Base):
             user.password = new_password
 
         return True
+
+    @property
+    def summary(self):
+        """
+        用户简介
+        :return:
+        """
+        return dict(
+            nickname=self.nickname,
+            beans=self.beans,
+            email=self.email,
+            send_receive=str(self.send_counter) + '/' + str(self.receive_counter)
+        )
 
 
 # @login_required 装饰的视图函数需要用到
