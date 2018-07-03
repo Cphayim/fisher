@@ -4,13 +4,14 @@
 """
 from flask import Flask
 from flask_login import LoginManager
+from flask_mail import Mail
 
 from models.base import db
 
 __author__ = 'Cphayim'
 
 login_manager = LoginManager()
-
+mail = Mail()
 
 def create_app():
     """
@@ -38,6 +39,9 @@ def create_app():
     # 指定登录视图函数的 endpoint 和 提示消息
     login_manager.login_view = 'web.login'
     login_manager.login_message = '请先登录或注册'
+
+    # 初始化 flask-mail
+    mail.init_app(app)
 
     return app
 
