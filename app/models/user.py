@@ -2,13 +2,15 @@
 """
   Created by Cphayim at 2018/6/28 20:22
 """
+from flask import current_app
 from sqlalchemy import Column, Integer, String, Boolean, Float
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 from app import login_manager
 from libs.helper import is_isbn_or_key
-from models.base import Base
+from models.base import Base, db
 from models.gift import Gift
 from models.wish import Wish
 from spider.yushu_book import YuShuBook
@@ -99,6 +101,32 @@ class User(UserMixin, Base):
             return True
         else:
             return False
+
+    def generate_token(self, expiration=600):
+        """
+        生成 token
+        :param expiration:
+        :return:
+        """
+        s = Serializer(current_app.config.get('SECRET_KEY'), expiration)
+        # s.dumps 返回一个二进制的密文，需要解码
+        return s.dumps({'id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def reset_password(token, new_password):
+        s = Serializer(current_app.config.get('SECRET_KEY'))
+        try:
+            # 需要将 str 编码为 二进制
+            data = s.loads(token.encode('utf-8'))
+        except:
+            return False
+
+        uid = data.get('id')
+        with db.auto_commit():
+            user = User.query.get(uid)
+            user.password = new_password
+
+        return True
 
 
 # @login_required 装饰的视图函数需要用到

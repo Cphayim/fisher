@@ -3,12 +3,13 @@
   Created by Cphayim at 2018/6/28 16:00
   权限相关视图函数
 """
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, current_app
 from flask_login import login_user, logout_user
 
-from forms.auth import RegisterForm, LoginForm
+from forms.auth import RegisterForm, LoginForm, EmailForm, ResetPasswordForm
 from models.base import db
 from models.user import User
+from libs.email import send_mail
 
 from . import web
 
@@ -67,13 +68,43 @@ def login():
 
 @web.route('/reset/password', methods=['GET', 'POST'])
 def forget_password_request():
-    pass
+    """
+    忘记密码申请视图函数
+    :return:
+    """
+    form = EmailForm(request.form)
+    if request.method == 'POST' and form.validate():
+        account_email = form.email.data
+        user = User.query.filter_by(email=account_email).first_or_404()
+        # 向用户发送电子邮件
+        send_mail(
+            account_email, '重置你的密码', 'email/reset_password.html',
+            user=user, token=user.generate_token()
+        )
+        flash('一封邮件已发送到邮箱' + account_email + ', 请及时查收')
+        # return redirect(url_for('web.login'))
+
+    return render_template('auth/forget_password_request.html', form=form)
 
 
-# 单元测试
 @web.route('/rest/password/<token>', methods=['GET', 'POST'])
 def forget_password(token):
-    pass
+    """
+    忘记密码视图函数
+    :param token:
+    :return:
+    """
+    form = ResetPasswordForm(request.form)
+    if request.method == 'POST' and form.validate():
+        success = User.reset_password(token, form.password1.data)
+
+        if success:
+            flash('你的密码已经更新，请使用新密码登录')
+            return redirect(url_for('web.login'))
+        else:
+            flash('密码重置失败')
+
+    return render_template('auth/forget_password.html', form=form)
 
 
 @web.route('/change/password', methods=['GET', 'POST'])
