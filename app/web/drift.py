@@ -13,6 +13,7 @@ from models.base import db
 from models.drift import Drift
 from models.gift import Gift
 from view_models.book import BookViewModel
+from view_models.drift import DriftCollection
 from . import web
 
 __author__ = 'Cphayim'
@@ -56,12 +57,18 @@ def send_drift(gid):
 @web.route('/pending')
 @login_required
 def pending():
+    """
+    鱼漂列表视图函数
+    :return:
+    """
     # 查询当前用户作为索要者或赠送者的所有鱼漂记录
     drifts = Drift.query.filter(
         or_(Drift.requester_id == current_user.id, Drift.gifter_id == current_user.id)
     ).order_by(
         desc(Drift.create_time)
     ).all()
+    drift_collection = DriftCollection(drifts, current_user.id)
+    return render_template('pending.html', drifts=drift_collection.data)
 
 
 @web.route('/drift/<int:gid>/reject')

@@ -48,7 +48,7 @@ class Drift(Base):
     # 赠送者 id
     gifter_id = Column(Integer)
     # 赠送者昵称
-    gifter_name = Column(Integer)
+    gifter_name = Column(String(20))
     # 礼物 id
     gift_id = Column(Integer)
 
