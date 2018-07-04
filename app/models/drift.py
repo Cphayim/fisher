@@ -4,6 +4,7 @@
 """
 from sqlalchemy import Column, Integer, String, SmallInteger
 
+from libs.enums import PendingStatus
 from models.base import Base
 
 __author__ = 'Cphayim'
@@ -54,3 +55,11 @@ class Drift(Base):
 
     # 状态 libs/enums.py -> PendingStatus
     pending = Column('pending', SmallInteger, default=1)
+
+    # @property
+    # def pending(self):
+    #     return PendingStatus(self._pending)
+    #
+    # @pending.setter
+    # def pending(self, status):
+    #     self._pending = status.value

@@ -72,6 +72,13 @@ class Base(db.Model):
             if hasattr(self, key) and key != 'id':
                 setattr(self, key, value)
 
+    def delete(self):
+        """
+        标记删除数据
+        :return:
+        """
+        self.status = 0
+
     @property
     def create_datetime(self):
         """

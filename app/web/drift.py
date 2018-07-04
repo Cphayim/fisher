@@ -9,9 +9,12 @@ from sqlalchemy import desc, or_
 
 from forms.book import DriftForm
 from libs.email import send_mail
+from libs.enums import PendingStatus
 from models.base import db
 from models.drift import Drift
 from models.gift import Gift
+from models.user import User
+from models.wish import Wish
 from view_models.book import BookViewModel
 from view_models.drift import DriftCollection
 from . import web
@@ -71,19 +74,58 @@ def pending():
     return render_template('pending.html', drifts=drift_collection.data)
 
 
-@web.route('/drift/<int:gid>/reject')
-def reject_drift(gid):
-    pass
+@web.route('/drift/<int:did>/reject')
+def reject_drift(did):
+    with db.auto_commit():
+        drift = Drift.query.filter_by(gifter_id=current_user.id, id=did).first_or_404()
+        # 将状态修改为 Reject
+        drift.pending = PendingStatus.Reject.value
+        # 返还鱼豆给鱼漂发起者
+        requester = User.query.get_or_404(drift.requester_id)
+        requester.beans += 1
+
+    return redirect(url_for('web.pending'))
 
 
-@web.route('/drift/<int:gid>/redraw')
-def redraw_drift(gid):
-    pass
+@web.route('/drift/<int:did>/redraw')
+@login_required
+def redraw_drift(did):
+    """
+    撤销鱼漂视图函数
+    :param did: 鱼漂 id
+    :return:
+    """
+    # 超权
+    # uid: 1 did: 1
+    # uid: 2 did: 2
+    # 要防止用户1去操作用户2的鱼漂
+    with db.auto_commit():
+        drift = Drift.query.filter_by(requester_id=current_user.id, id=did).first_or_404()
+        # 将状态修改为 Redraw
+        drift.pending = PendingStatus.Redraw.value
+        # 返还鱼豆
+        current_user.beans += 1
+
+    return redirect(url_for('web.pending'))
 
 
 @web.route('/drift/<int:did>/mailed')
+@login_required
 def mailed_drift(did):
-    pass
+    with db.auto_commit():
+        drift = Drift.query.filter_by(gifter_id=current_user.id, id=did).first_or_404()
+        # 将状态修改为 Success
+        drift.pending = PendingStatus.Success.value
+        # 获得一个鱼豆
+        current_user.beans += 1
+        # 修改礼物状态为完成
+        gift = Gift.query.filter_by(id=drift.gift_id).first_or_404()
+        gift.launched = True
+
+        # 如果索要者存在对应未完成的心愿，也一并完成
+        Wish.query.filter_by(isbn=drift.isbn, uid=drift.requester_id, launched=False).update({Wish.launched: True})
+
+    return redirect(url_for('web.pending'))
 
 
 def save_drift(drift_form, current_gift):

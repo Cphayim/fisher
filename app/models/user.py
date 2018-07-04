@@ -91,7 +91,7 @@ class User(UserMixin, Base):
         # 成功送出的总数
         success_gifts_count = Gift.query.filter_by(uid=self.id, launched=True).count()
         # 成功收到的总数
-        success_receive_count = Drift.query.filter_by(requester_id=self.id, pending=PendingStatus.Success).count()
+        success_receive_count = Drift.query.filter_by(requester_id=self.id, pending=PendingStatus.Success.value).count()
 
         # 每索取两本书，自己必须送出一本书
         return True if \

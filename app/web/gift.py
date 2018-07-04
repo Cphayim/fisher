@@ -5,7 +5,9 @@
 from flask import current_app, flash, url_for, redirect, render_template
 from flask_login import login_required, current_user
 
+from libs.enums import PendingStatus
 from models.base import db
+from models.drift import Drift
 from models.gift import Gift
 from view_models.trade import MyTrades
 from . import web
@@ -54,5 +56,23 @@ def save_to_gifts(isbn):
 
 
 @web.route('/gifts/<gid>/redraw')
+@login_required
 def redraw_from_gifts(gid):
-    pass
+    """
+    撤销礼物视图函数
+    :param gid: gift_id
+    :return:
+    """
+    gift = Gift.query.filter_by(id=gid, launched=False).first_or_404()
+    drift = Drift.query.filter_by(gift_id=gid, pending=PendingStatus.Waiting.value).first()
+
+    if drift:
+        # 如果这个礼物有关联到未完成的鱼漂记录，要求用户先结束鱼漂
+        flash('这个礼物正处于交易状态，请先前往鱼漂完成该交易')
+    else:
+        # 标记删除记录并扣除系统赠送的鱼豆
+        with db.auto_commit():
+            current_user.beans -= current_app.config.get('BEANS_UPLOAD_ONE_BOOK')
+            gift.delete()
+
+    return redirect(url_for('web.my_gifts'))
